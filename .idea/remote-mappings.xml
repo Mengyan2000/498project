@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="RemoteMappingsManager">
+    <list>
+      <list>
+        <remote-mappings server-id="python@sftp://hgeng4@aristotle.csl.illinois.edu:22/home/hgeng4/my-envs/atrdnn/bin/python">
+          <settings>
+            <list>
+              <mapping local-root="" remote-root="" />
+            </list>
+          </settings>
+        </remote-mappings>
+      </list>
+    </list>
+  </component>
+</project>
