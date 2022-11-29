@@ -24,25 +24,29 @@ def quantize_model(model, args):
     # SqueezeNet model has two Sequential layer, features and classifier
     # Features layer has one Conv2D layer and 8 Fire module
     # classifier has 1 Conv2D layer only
-    B_w = 7
+    B_w = 6
+    print("in quantization, precision of weight is: ", B_w)
     with torch.no_grad():
-        for name, layer in model._modules.items():
-            if isinstance(layer, nn.Sequential):
-                    for single_layer in layer:
-                        if isinstance(single_layer, nn.Conv2d):
-                            print("in quantization, after torch.load: weight: ", single_layer.weight)
+        # for name, layer in model._modules.items():
+        #     if isinstance(layer, nn.Sequential):
+        #             for single_layer in layer:
+        #                 if isinstance(single_layer, nn.Conv2d):
+        #                     print("in quantization, after torch.load: weight: ", single_layer.weight)
         for name, layer in model._modules.items():
             if isinstance(layer, nn.Sequential):
                 for single_layer in layer:
                     if isinstance(single_layer, nn.Conv2d):     ### if the layer is conv2d inside Sequential
-                        print("inside quantize_model:: ", name, single_layer)
+                        # print("inside quantize_model:: ", name, single_layer)
                         ### exchanging the max and min quantize level to be symmetrical around 0
+                        
                         weight_min = torch.min(single_layer.weight).detach().numpy()
                         weight_max = torch.max(single_layer.weight).detach().numpy()
                         if np.abs(weight_min) > np.abs(weight_max):
                             weight_max = 0-weight_min
                         else:
                             weight_min = 0-weight_max
+                        if name == "classifier":
+                            print("inside quantize_model, weight_max, min", weight_max, weight_min)
                         quantize_level = np.arange(weight_min, weight_max, 2*weight_max/np.power(2, B_w))
                         quantize_level_tensor = torch.tensor(quantize_level)
                         # print("inside one layer: quantize level: ", quantize_level, " and weight: ", single_layer.weight)
@@ -85,12 +89,26 @@ def rgetattr(obj, attr, *args):
     return functools.reduce(_getattr, [obj] + attr.split('.'))
 
 
-def quantize_uniform(data, n_bits, clip, device='cuda'):
-    w_c = data.clamp(-clip, clip)
-    b = torch.pow(torch.tensor(2.0), 1 - n_bits).to(device)
-    w_q = clip * torch.min(b * torch.round(w_c / (b * clip)), 1 - b)
+def quantize_uniform(data, n_bits, device='cuda'):
+    # w_c = data.clamp(-clip, clip)
+    # b = torch.pow(torch.tensor(2.0), 1 - n_bits).to(device)
+    # w_q = clip * torch.min(b * torch.round(w_c / (b * clip)), 1 - b)
+    # print("in quantize uniform, size of data: ", len(data.size()))
+    maximum = torch.max(data).detach().cpu().numpy()
+    scale = (maximum)/(2**n_bits)
+    data = torch.quantize_per_tensor(data, scale, 0, torch.quint8).dequantize()
+    # quantize_level = np.arange(0, maximum, maximum/np.power(2, n_bits))
+    # quantize_level_tensor = torch.tensor(quantize_level).to(device)
+    # for i in range(len(data)):
+    #     for j in range(len(data[i])):
+    #         for x in range(len(data[i][j])):
+    #             for y in range(len(data[i][j][x])):
+    #                 print("i j x y: ", i,j,x,y)
+    #                 data[i][j][x][y] = quantize_level_tensor[torch.argmin(torch.abs(data[i][j][x][y]-quantize_level_tensor))]
 
-    return w_q
+
+
+    return data
 
 
 def quantize_act(data, n_bits, clip, device='cuda'):
