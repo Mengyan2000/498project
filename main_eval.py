@@ -28,21 +28,18 @@ def main():
     trainer_configs = nn_config.TrainerConfigs()
     
     trainer_configs.__setup__(usr_configs)     ## the function that calls get_model, quantization
-    for name, layer in trainer_configs.model._modules.items():
-        if isinstance(layer, nn.Sequential):
-                for single_layer in layer:
-                    if isinstance(single_layer, nn.Conv2d):
-                        print("in main, after __Setup__: weight: ", single_layer.weight)
+    
     # print("after trainer_config setup: ", trainer_configs.model)
     
     trainer = nn_config.get_trainer(usr_configs.train)(trainer_configs)
-    # trainer = nn_config.get_trainer(trainer_configs.train)   ## trainer is a <nn.trainer.BackPropTrainer object
+    ## trainer is a <nn.trainer.BackPropTrainer object
     # print("user config resume_from_best: ", trainer.trainer_configs.resume_from_best, "eval_model: ", trainer.trainer_configs.eval_model)
-    for name, layer in trainer.trainer_configs.model._modules.items():
-        if isinstance(layer, nn.Sequential):
-                for single_layer in layer:
-                    if isinstance(single_layer, nn.Conv2d):
-                        print("in main, after get_trainer: weight: ", single_layer.weight)
+    # for name, layer in trainer.trainer_configs.model._modules.items():
+    #     if name == "classifier":
+    #         if isinstance(layer, nn.Sequential):
+    #             for single_layer in layer:
+    #                 if isinstance(single_layer, nn.Conv2d):
+    #                     print("in main, after get_trainer: weight: ", single_layer.weight)
     # trainer.trainer_configs.model = squeeze_net_10_way.pt.tar
     
     trainer.eval(trainer.trainer_configs.test_loader, print_acc=True, cfm=True)
