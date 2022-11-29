@@ -14,11 +14,14 @@ import time
 
 import torch
 
+import torch.nn as nn
+
 import IO.plotter as plotter
 from IO.dconst import EPOCH_FMT_STR
 from nn.models import __MODELS_INPUTS__
 from nn.utils import AverageMeter, ProgressMeter, Profiler
 from nn import quantization
+from nn.modules import Fire
 
 def accuracy(output, target, topk=(1,)):
     """Computes the accuracy over the k top predictions for the specified values of k"""
@@ -179,6 +182,7 @@ class Trainer:
             nclass = 10
             confusion_matrix = torch.zeros(nclass, nclass)
         with torch.no_grad():
+            print("in eval, the length of data_loader is: ", len(data_loader))
             for idx, data in enumerate(data_loader):
                 x, y = data
                 x = x.to(self.trainer_configs.device)
@@ -190,9 +194,9 @@ class Trainer:
                 top1.update(acc.item(), n_data)
                 losses.update(loss.item(), n_data)
 
-                if cfm:
-                    for t, p in zip(y.view(-1), predictions.view(-1)):
-                        confusion_matrix[t.long(), p.long()] += 1
+            if cfm:
+                for t, p in zip(y.view(-1), predictions.view(-1)):
+                    confusion_matrix[t.long(), p.long()] += 1
             if print_acc:
                 print(' * Acc@1 {top1.avg:.3f}'.format(top1=top1))
 
@@ -244,7 +248,12 @@ class Trainer:
         self.trainer_configs.model.load_state_dict(ckpt.get('model_state'))
         self.trainer_configs.optimizer.load_state_dict(ckpt.get('optimizer_state'))
         self.trainer_configs.lr_scheduler.load_state_dict(ckpt.get('scheduler_state'))
-
+        # for name, layer in self.trainer_configs.model._modules.items():
+        #     if name == "classifier":
+        #         if isinstance(layer, nn.Sequential):
+        #             for single_layer in layer:
+        #                 if isinstance(single_layer, nn.Conv2d):
+        #                     print("in main, before quantization: weight: ", single_layer.weight)
 
 class BackPropTrainer(Trainer):
     def __init__(self, *args, **kwargs):
@@ -273,7 +282,52 @@ class BackPropTrainer(Trainer):
         :param y: target
         :return: validation / test acc, valiation / test loss
         """
-        output = self.trainer_configs.model(x)
+        # output = self.trainer_configs.model(x)
+        
+        # max_output = torch.max(output)
+        # min_output = torch.min(output)
+        # print("output max, output min:", output.size(), max_output, min_output)
+        
+        # added quantization for activation output here.
+        # from quantization.py file, in main eval step.
+        B_o = 6
+        
+        output = x
+        with torch.no_grad():
+            for name, layer in self.trainer_configs.model._modules.items():
+                if isinstance(layer, nn.Sequential):
+                    for single_layer in layer:                      # non-Fire module that is a conv layer
+                        if isinstance(single_layer, nn.ReLU):
+                            output = single_layer(output)
+                            # print("before quantize: ", torch.max(output), torch.min(output), output[:1][:1][:1][:10])
+                            output = quantization.quantize_uniform(output, B_o)
+                            # print("after quantize: ", output[:1][:1][:1][:10])
+                        elif isinstance(single_layer, Fire):            # Fire module logic is kinda complicated
+                            output = single_layer.squeeze(output)       # This is 1st conv2d layer
+                            output = single_layer.squeeze_activation(output)
+                            # print("after squeeze, output dimension: ", output.size())
+                            output_copy = output
+                            output_copy = quantization.quantize_uniform(output, B_o)  #quantize after ReLU function, because the minimum is 0
+                            output_1 = single_layer.expand1x1(output_copy)   # This is 2nd conv2d layer
+                            output_1 = single_layer.expand1x1_activation(output_1)
+                            # print("after first 1x1, output dimension: ", output_1.size())
+                            output_1 = quantization.quantize_uniform(output_1, B_o)
+                            output_2 = single_layer.expand3x3(output_copy)   # This is 3rd conv2d layer
+                            output_2 = single_layer.expand3x3_activation(output_2)
+                            # print('after 2x2 expansion, output dim: ', output_2.size())
+                            output_2 = quantization.quantize_uniform(output_2, B_o)
+                            
+                            output = torch.cat([
+                                output_1,
+                                output_2
+                            ], 1)
+                            # print('after catenation, output dim: ', output.size())
+                        else:
+                            output = single_layer(output)
+                        
+        output = torch.flatten(output, 1)
+        # output = self.trainer_configs.model(x) #original way
+        # print("after quantization:", output[5:10])
         loss = self.trainer_configs.criterion(output, y)
         accs, predictions = accuracy(output, y, topk=(1,))
         acc = accs[0]
