@@ -1,0 +1,16 @@
+0.7
+2020.2
+Oct 19 2021
+03:16:22
+C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.sim/sim_1/behav/xsim/glbl.v,1634335545,verilog,,,,glbl,,,,,,,,
+C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sim_1/imports/final/testbench.v,1670547112,verilog,,,,testbench,,,,,,,,
+C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/PE.v,1670489869,verilog,,C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/Processing_unit.v,,PE,,,,,,,,
+C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/Processing_unit.v,1670488574,verilog,,C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/conv_control.v,,Processing_unit_12,,,,,,,,
+C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/conv_control.v,1670491209,verilog,,C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/conv_datapath.v,,conv_control,,,,,,,,
+C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/conv_datapath.v,1670490993,verilog,,C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/input_RAM.v,,conv_datapath,,,,,,,,
+C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/input_RAM.v,1670476869,verilog,,C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/middle_input_buffer.v,,input_RAM,,,,,,,,
+C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/middle_input_buffer.v,1670453691,verilog,,C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/second_weight_RAM.v,,middle_input_buffer,,,,,,,,
+C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/second_weight_RAM.v,1670309669,verilog,,C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/third_weight_RAM.v,,second_weight_RAM,,,,,,,,
+C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/third_weight_RAM.v,1670476233,verilog,,C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/top_level.v,,third_weight_RAM,,,,,,,,
+C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/top_level.v,1670490890,verilog,,C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/weight_RAM.v,,top_level,,,,,,,,
+C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sources_1/imports/final/weight_RAM.v,1670302819,verilog,,C:/Users/mengy/Documents/University/ECE498/finalProject/finalProject.srcs/sim_1/imports/final/testbench.v,,weight_RAM,,,,,,,,
